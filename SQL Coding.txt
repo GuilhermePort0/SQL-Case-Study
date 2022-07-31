@@ -1,0 +1,167 @@
+-- Criação de Banco de Dados
+CREATE DATABASE "orderdetails"
+	WITH
+	OWNER = postgres 
+	ENCODING = 'UTF8' -- Definindo codificação
+	CONNECTION LIMIT = -1;
+	
+--Criando schema
+CREATE SCHEMA "case_study_1"
+	AUTHORIZATION postgres;
+	
+---------------------------------------------------------------------------------------------- 
+--Criando Tabelas
+-- Table TR_OrderDetails
+CREATE TABLE case_study_1."TR_OrderDetails"
+("orderid" INTEGER NOT NULL,
+ "orderdate" DATE NOT NULL,
+ "propertyid" INTEGER NOT NULL,
+ "productud" INTEGER NOT NULL,
+ "quantity" INTEGER NOT NULL,
+ PRIMARY KEY("orderid")
+)
+
+-- Tabela TR_Products
+CREATE TABLE case_study_1."TR_Products"
+("productid" INTEGER NOT NULL,
+ "productname" CHARACTER VARYING(30) NOT NULL,
+ "productcategory" CHARACTER VARYING(30) NOT NULL,
+ "price" INTEGER NOT NULL,
+ PRIMARY KEY("productid")
+)
+
+-- Tabela TR_PropertyInfo
+CREATE TABLE case_study_1."TR_PropertyInfo"
+(
+    "propid" INTEGER NOT NULL,
+    "propertycity" CHARACTER VARYING(30) NOT NULL,
+    "propertystate" character varying(30) NOT NULL,
+    PRIMARY KEY ("propid")
+)
+----------------------------------------------------------------------------------------------------------------
+-- Dados para verificação
+SELECT *
+FROM case_study_1."TR_OrderDetails",
+	 case_study_1."TR_Products",
+     case_study_1."TR_PropertyInfo";
+
+/* Dados para verificação TR_OrderDetails*/
+SELECT *
+FROM case_study_1."TR_OrderDetails";
+
+--Dados para verificação TR_Products
+SELECT *
+FROM case_study_1."TR_Products";
+
+--Dados para verificação TR_PropertyInfo
+SELECT *
+FROM  case_study_1."TR_PropertyInfo";
+--------------------------------------------------------------
+/* Verificação da quantidade de Produtos separados por Categoria 
+disponibilizados pela empresa em ordem decrescente*/
+SELECT COUNT(productcategory) AS produtos_diferentes, 
+	   productcategory AS categoria_produto
+FROM case_study_1."TR_Products"
+GROUP BY  categoria_produto
+ORDER BY produtos_diferentes DESC;
+
+-- Em que estados estão localizadas  as lojas da empresa 
+SELECT COUNT(propid) AS numero_lojas, 
+	   propertystate AS nome_estado
+FROM case_study_1."TR_PropertyInfo"
+GROUP BY nome_estado
+ORDER BY numero_lojas DESC
+LIMIT 5;
+---------------------------------------------------
+-- Verificação dos 5 produtos em maior Quantidade
+SELECT pro.productname AS nome_produto,
+	   SUM(ord.quantity) AS quantidade_total
+FROM  case_study_1."TR_OrderDetails" AS ord
+LEFT JOIN case_study_1."TR_Products" AS pro on ord.productid = pro.productid
+GROUP BY nome_produto
+ORDER BY quantidade_total DESC
+LIMIT 5;
+
+-- Verificação dos 5 produtos que geraram maior receita para empresa
+SELECT pro.productname AS nome_produto,
+	   sum(ord.quantity * pro.price) AS receita
+FROM case_study_1."TR_OrderDetails" AS ord
+LEFT JOIN case_study_1."TR_Products" AS pro ON ord.productid = pro.productid
+GROUP BY nome_produto
+ORDER BY receita DESC
+LIMIT 5;
+
+-- Verificação das 10 cidades que geraram maior receita para empresa
+SELECT pi.propertycity AS nome_cidade, 
+	   SUM(ord.quantity * pro.price) AS Receita_Vendas
+FROM case_study_1."TR_PropertyInfo" AS pi
+LEFT JOIN case_study_1."TR_OrderDetails" AS ord ON ord.propertyid = pi.propid
+LEFT JOIN case_study_1."TR_Products" AS pro ON ord.productid = pro.productid
+GROUP BY nome_cidade
+ORDER BY Receita_Vendas DESC
+LIMIT 10;
+
+-- 20 cidades que geraram maior receita em vendas e seus principais produtos  
+SELECT pi.propertycity AS nome_cidade, 
+	   pro.productname AS nome_produto,
+	   SUM(ord.quantity * pro.price) AS Receita_Vendas
+FROM case_study_1."TR_PropertyInfo" AS pi
+LEFT JOIN case_study_1."TR_OrderDetails" AS ord ON ord.propertyid = pi.propid
+LEFT JOIN case_study_1."TR_Products" AS pro ON ord.productid = pro.productid
+GROUP BY nome_cidade, nome_produto
+ORDER BY Receita_Vendas DESC
+LIMIT 20;
+
+
+-- 5 produtos que mais geraram receita na cidade de Arlington 
+SELECT pi.propertycity AS nome_cidade, 
+        pro.productname AS nome_produto,
+	   SUM(ord.quantity * pro.price) AS Receita_Vendas
+FROM case_study_1."TR_PropertyInfo" AS pi
+LEFT JOIN case_study_1."TR_OrderDetails" AS ord ON ord.propertyid = pi.propid
+LEFT JOIN case_study_1."TR_Products" AS pro ON ord.productid = pro.productid
+WHERE pi.propertycity = 'Arlington'
+GROUP BY nome_cidade, nome_produto
+ORDER BY Receita_Vendas DESC
+LIMIT 5;
+
+-- Quantos itens pertencem as pricipais categorias de preço
+SELECT CASE WHEN price BETWEEN 0 AND 100 THEN '0-100'
+	        WHEN  price BETWEEN 100 AND 200 THEN '100-200'
+			WHEN  price BETWEEN 200 AND 300 THEN '200-300'END AS categorias_de_preço, COUNT(*) AS quantia_de_itens
+FROM case_study_1."TR_Products"
+GROUP BY categorias_de_preço
+ORDER BY quantia_de_itens DESC;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
